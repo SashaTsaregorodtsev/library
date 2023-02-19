@@ -1,0 +1,59 @@
+import reactLogo from "./assets/react.svg";
+import styles from "./App.module.css";
+import Table from "react-bootstrap/Table";
+import Dropdown from "react-bootstrap/Dropdown";
+import Button from "react-bootstrap/Button";
+import { Route, Routes } from "react-router-dom"; 
+ 
+ <Routes>
+        <Route path="/" element={<div>w</div>}>
+          <Route index element={<div>s</div>} />
+          <Route path="about" element={<div>HUI</div>} />
+          <Route path="dashboard" element={<div>s</div>} />
+          <Route path="*" element={<></>} />
+        </Route>
+      </Routes>
+      <input onChange={(e) => Ust(e.target.value)} value={st} />
+      <button onClick={rr}>ada</button>
+      <Table striped bordered hover size="sm" variant="dark" responsive>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Название</th>
+            <th>Автор(ы)</th>
+            <th>Год издания</th>
+          </tr>
+        </thead>
+        <tbody>
+          {mock.map((el) => (
+            <tr>
+              <td>{el.id}</td>
+              <td>{el.name}</td>
+              <td>{el.Authors}</td>
+              <td>{el.years}</td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+      <Dropdown>
+        <Dropdown.Toggle variant="success" id="dropdown-basic">
+          Фильтр
+        </Dropdown.Toggle>
+
+        <Dropdown.Menu>
+          {mock.map((el) => (
+            <Dropdown.Item href="#/action-3" key={el.id}>
+              {el.Authors}
+            </Dropdown.Item>
+          ))}
+        </Dropdown.Menu>
+      </Dropdown>
+      <div style={{ display: "flex", marginTop: 10 }}>
+        <Button variant="primary">Редактировать</Button>
+        <Button style={{ marginLeft: 5 }} variant="primary">
+          Добавить
+        </Button>
+        <Button style={{ marginLeft: 5 }} variant="danger">
+          Удалить
+        </Button>
+      </div>
