@@ -10,7 +10,6 @@ import { persistStore } from "redux-persist";
 let persistor = persistStore(store);
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  // <StoreContext.Provider value={store}>
   <Provider store={store}>
     <PersistGate loading={null} persistor={persistor}>
       <BrowserRouter>
@@ -18,5 +17,4 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
       </BrowserRouter>
     </PersistGate>
   </Provider>
-  /* </StoreContext.Provider> */
 );

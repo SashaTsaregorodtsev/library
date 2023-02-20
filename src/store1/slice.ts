@@ -1,28 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
-
-type Books = {
-  id: number;
-  BookTitle: string;
-  PublicationDate: number;
-  BookAuthor: Array<Omit<Authors, "numberOfBooks">>;
-};
-
-type Authors = {
-  id: number;
-  authorsName: string;
-  numberOfBooks: number;
-};
+import { Authors, Books } from "../types/types";
 
 interface MainSlice {
-  books: Books[] | [null];
-  authors: Authors[] | [null];
-  sortBooks: [];
+  books: Array<Books>;
+  authors: Array<Authors>;
 }
 
 const initialState: MainSlice = {
   books: [],
   authors: [],
-  sortBooks: [],
 };
 
 export const mainSlice = createSlice({
@@ -31,25 +17,24 @@ export const mainSlice = createSlice({
   reducers: {
     createBook: (state: MainSlice, action) => {
       const { name, years, authors } = action.payload;
-      console.log(authors, "AUTHOR");
+      console.log(action.payload, "AUTHOR");
       const LenBooks = state.books.length;
-      const authorOnId = state.authors.filter((el) =>
-        authors.includes(String(el.id))
-      );
-
-      // updateCOUNTforAuthor
+      const authorOnId = state.authors
+        .map((el) => {
+          if (authors.includes(el?.id)) {
+            return el?.id;
+          }
+        })
+        .filter((el) => el);
       const newBook = {
         id: counterId(LenBooks),
         BookTitle: name,
         PublicationDate: years,
-        // BookAuthor: authorOnId,
-        get BookAuthor() {
-          return state.authors.filter((el) => authors.includes(el.id));
-        },
+        BookAuthor: authorOnId,
       };
 
       const newAuthors = state.authors.map((el) => {
-        if (el.id === Number(authors)) {
+        if (el?.id === Number(authors)) {
           let count = el.numberOfBooks;
           return { ...el, numberOfBooks: (count += 1) };
         } else {
@@ -58,14 +43,10 @@ export const mainSlice = createSlice({
       });
       state.authors = state.authors.length ? newAuthors : [];
       state.books.push(newBook);
-      //   ? updateAuthorState(state.authors, Number(authors))
-      //   : [];
-
-      // updateAuthorState()=>
     },
     createAuthor: (state: MainSlice, action) => {
       const { authors } = action.payload;
-      const LenAuthors = state.books.length;
+      const LenAuthors = state.authors.length;
 
       const newAuthor: Author = {
         id: counterId(LenAuthors),
@@ -76,14 +57,33 @@ export const mainSlice = createSlice({
     },
     deleteAuthor: (state: MainSlice, action) => {
       const { id } = action.payload;
+      const booksWithDeletedId = state.books.map((el) => {
+        if (el.BookAuthor.includes(id)) {
+          return {
+            ...el,
+            BookAuthor: el.BookAuthor.filter((booksDel) => booksDel != id),
+          };
+        }
+        return el;
+      });
+      state.books = booksWithDeletedId;
       state.authors = deleteObjFromArray(state.authors, Number(id));
     },
     deleteBooks: (state: MainSlice, action) => {
-      const { id, sortMode } = action.payload;
-      state.books = deleteObjFromArray(
-        sortMode ? state.sortBooks : state.books,
-        Number(id)
-      );
+      const { id } = action.payload;
+      const authorsWithDeletedId = state.authors.map((el) => {
+        if (el) {
+          if (el.id === id) {
+            return {
+              ...el,
+              numberOfBooks: (el.numberOfBooks -= 1),
+            };
+          }
+          return el;
+        }
+      });
+      state.authors = authorsWithDeletedId;
+      state.books = deleteObjFromArray(state.books, id);
     },
     editAuthor: (state: MainSlice, action) => {
       const { authors, id } = action.payload;
@@ -95,20 +95,6 @@ export const mainSlice = createSlice({
         }
       });
 
-      const NewBooks = state.books.map((el) => {
-        const ele = el.BookAuthor.map((eles) =>
-          eles.id === Number(id)
-            ? { ...eles, authorsName: authors }
-            : { ...eles }
-        );
-        if (ele[0].id === el.id) {
-          return { ...el, BookAuthor: ele };
-        } else {
-          return { ...el, BookAuthor: ele };
-        }
-      });
-
-      state.books = NewBooks;
       state.authors = newAuthorState;
     },
     editBook: (state: MainSlice, action) => {
@@ -129,21 +115,6 @@ export const mainSlice = createSlice({
       });
       state.books = newBookState;
     },
-    filterBooks: (state: MainSlice, action) => {
-      const sortBy = state.books
-        .map((el) => {
-          const findEl =
-            el &&
-            el.BookAuthor.filter(
-              (elements) => Number(elements.id) === Number(action.payload.id)
-            );
-          if (findEl && findEl.length && findEl[0].id === action.payload.id) {
-            return { ...el, BookAuthor: findEl };
-          }
-        })
-        .filter((el) => el);
-      state.sortBooks = sortBy;
-    },
   },
 });
 
@@ -154,35 +125,13 @@ export const {
   deleteBooks,
   editAuthor,
   editBook,
-  filterBooks,
 } = mainSlice.actions;
 
 export default mainSlice.reducer;
 
 ///HELPERS
 const deleteObjFromArray = (arr: [], id: number | string) => {
-  return arr.filter((elements) => elements.id !== id);
+  return arr.filter((elements: Books | Authors) => elements.id !== id);
 };
 
-const counterForAuthorsBook = () => {};
-const editAuthorsName = (arr: [], name: string, id: number) => {
-  const authors = arr.map((el) => {
-    if (el.id === id) {
-      return { ...el, name: name };
-    } else {
-      return el;
-    }
-  });
-  return authors;
-};
 const counterId = (b: number) => (b >= 0 ? b + 1 : 0);
-const getEl = (arr: [], id: number) => arr.find((el) => el.id === id);
-
-// const newAuthors = state.authors.map((el) => {
-//   if (el && el.id === Number(authors)) {
-//     let count = el.numberOfBooks;
-//     return { ...el, numberOfBooks: (count += 1) };
-//   } else {
-//     return el;
-//   }
-// });

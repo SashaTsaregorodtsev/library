@@ -12,10 +12,6 @@ import {
   REHYDRATE,
 } from "redux-persist";
 
-const reducers = combineReducers({
-  main: mainSlice,
-});
-
 const persistConfig = {
   key: "root",
   version: 1,
