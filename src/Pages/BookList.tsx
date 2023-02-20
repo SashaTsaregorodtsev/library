@@ -2,32 +2,32 @@ import { useEffect, useState } from "react";
 import Table from "react-bootstrap/Table";
 import Dropdown from "react-bootstrap/Dropdown";
 import Button from "react-bootstrap/Button";
-import { deleteBooks, filterBooks } from "../store1/slice";
+import { deleteBooks } from "../store1/slice";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
+import { Books } from "../types/types";
 type Props = {};
 
 const BookList = (props: Props) => {
-  // const { main } = useStore();
   const dispatch = useAppDispatch();
   const [activeBook, setActiveBook] = useState<number | null>(null);
   const [activeAuthor, setActiveAuthor] = useState<number | null>(null);
   const books = useAppSelector((state) => state.main.books);
   const authors = useAppSelector((state) => state.main.authors);
-  const sortBooks = useAppSelector((state) => state.main.sortBooks);
-  const [list, useList] = useState();
+  const [list, useList] = useState(books);
   const [editMode, setEditMode] = useState(false);
   const deleteBook = () =>
     dispatch(deleteBooks({ id: activeBook, sortMode: editMode }));
-  const FilterBy = () => {
-    dispatch(filterBooks({ id: activeAuthor }));
-    setEditMode(true);
+
+  const filterByAuthor = () => {
+    const filtredBooks = books?.filter((el: Books) =>
+      el?.BookAuthor?.includes(activeAuthor)
+    );
+    useList(filtredBooks);
   };
-  console.log(localStorage.getItem("authors"), "LOCAL");
+
   useEffect(() => {
-    useList(editMode ? sortBooks : books);
-  }, [editMode]);
-  console.log(books, "BOOKS");
-  console.log(authors, "BOOKS");
+    useList(books);
+  }, [books]);
 
   return (
     <>
@@ -45,7 +45,13 @@ const BookList = (props: Props) => {
             <tr key={el?.id} onClick={() => setActiveBook(el ? el.id : null)}>
               <td>{el?.id}</td>
               <td>{el?.BookTitle}</td>
-              <td>{el?.BookAuthor?.map((el) => el.authorsName).join(",")}</td>
+              <td>
+                {authors.map((author) =>
+                  el?.BookAuthor?.includes(author?.id)
+                    ? author?.authorsName
+                    : null
+                )}
+              </td>
               <td>{el?.PublicationDate}</td>
             </tr>
           ))}
@@ -66,7 +72,7 @@ const BookList = (props: Props) => {
             </Dropdown.Item>
           ))}
         </Dropdown.Menu>
-        <Button onClick={FilterBy} variant="primary">
+        <Button onClick={filterByAuthor} variant="primary">
           Применить фильтр
         </Button>
       </Dropdown>

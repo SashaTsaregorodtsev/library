@@ -11,8 +11,10 @@ const AuthorList = (props: Props) => {
   const dispatch = useAppDispatch();
   const allAuthors = useAppSelector((state) => state.main.authors);
   const [activeAuthor, setActiveAuthor] = useState<number | null>(null);
-  const deleteFromState = () => dispatch(deleteAuthor());
-  console.log(allAuthors, "authors");
+  const deleteFromState = () => {
+    dispatch(deleteAuthor({ id: activeAuthor }));
+  };
+  console.log(activeAuthor, "authors");
   return (
     <>
       <Table striped bordered hover size="sm" variant="dark" responsive>
@@ -46,7 +48,7 @@ const AuthorList = (props: Props) => {
         )}
 
         <Button
-          // onClick={deleteAuthorFromState}
+          onClick={deleteFromState}
           style={{ marginLeft: 5 }}
           variant="danger"
         >
