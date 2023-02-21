@@ -1,24 +1,21 @@
-import { useState } from "react";
-import * as yup from "yup";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
-import { createBook, editBook } from "../store1/slice";
+import { createBook, editBook } from "../store/slice";
 import { Field, Formik } from "formik";
 import CustomSelect from "../Components/CustomSelect";
 import { Books } from "../types/types";
 import { useNavigate } from "react-router-dom";
+import { bookSchema } from "../yupSchema/schema";
 
-type Props = {};
-
-const ManageBook = (props: Props) => {
+const ManageBook = () => {
   const navigate = useNavigate();
-  const [editMode, setEditMode] = useState(window.location.search);
+  const editMode = window.location.search;
   const QueryId = editMode && editMode.replace("?", " ");
   const dispatch = useAppDispatch();
   const books = useAppSelector((state) => state.main.books);
   const allAuthors = useAppSelector((state) => state.main.authors);
-  const editBooks =
+  const editBooks: any =
     editMode && books.find((el: Books) => el.id === Number(QueryId));
 
   const authorsForSelect = allAuthors.map((el) => ({
@@ -27,47 +24,43 @@ const ManageBook = (props: Props) => {
     value: el?.id,
   }));
 
-  const gos = (values: {
-    bookName: string;
-    yearsPublic: number;
-    authors: [];
-  }) => {
-    console.log(values, "qwddwq");
+  const submitBook = (values: any) => {
     const { bookName, yearsPublic, authors } = values;
-    editMode
-      ? dispatch(
-          editBook({
-            id: Number(QueryId),
-            name: bookName,
-            years: yearsPublic,
-            authors,
-          })
-        )
-      : dispatch(createBook({ name: bookName, years: yearsPublic, authors }));
+    if (editMode) {
+      dispatch(
+        editBook({
+          id: Number(QueryId),
+          name: bookName,
+          years: yearsPublic,
+          authors,
+        })
+      );
+    } else {
+      dispatch(createBook({ name: bookName, years: yearsPublic, authors }));
+    }
     return navigate("/listsBooks");
   };
-  const schema = yup.object({
-    bookName: yup.string().required(),
-    yearsPublic: yup.number().required(),
-    authorsArray: yup.array().required(),
-  });
 
   return (
     <Formik
-      validationSchema={schema}
+      validationSchema={bookSchema}
       initialValues={{
-        bookName: editMode && editBooks.BookTitle,
-        yearsPublic: editMode && editBooks.PublicationDate,
+        bookName: editMode ? editBooks?.BookTitle : "",
+        yearsPublic: editMode ? editBooks?.PublicationDate : "",
         authorsArray: authorsForSelect,
       }}
-      onSubmit={(values, action) => gos(values)}
+      onSubmit={(values, action) => submitBook(values)}
     >
       {(props) => (
         <Form onSubmit={props.handleSubmit}>
           <h1>Создание книги</h1>
           <Form.Group className="mb-3" controlId="formBasicEmail">
             <Form.Label>Название</Form.Label>
+            {props.touched.bookName && props.errors.bookName ? (
+              <div>Должно быть строкой</div>
+            ) : null}
             <Form.Control
+              required
               value={props.values.bookName}
               onChange={props.handleChange}
               type="text"
@@ -79,6 +72,7 @@ const ManageBook = (props: Props) => {
           <Form.Group className="mb-3" controlId="formBasicPassword">
             <Form.Label>Год издания</Form.Label>
             <Form.Control
+              required
               value={props.values.yearsPublic}
               onChange={props.handleChange}
               type="number"
@@ -95,7 +89,7 @@ const ManageBook = (props: Props) => {
             ..."
             isMulti={true}
           />
-          <Button variant="primary" type="submit">
+          <Button style={{ marginTop: 15 }} variant="primary" type="submit">
             {editMode ? "Редактировать" : "Добавить"}
           </Button>
         </Form>

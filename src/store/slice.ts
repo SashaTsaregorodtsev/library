@@ -17,41 +17,28 @@ export const mainSlice = createSlice({
   reducers: {
     createBook: (state: MainSlice, action) => {
       const { name, years, authors } = action.payload;
-      console.log(action.payload, "AUTHOR");
-      const LenBooks = state.books.length;
-      const authorOnId = state.authors
-        .map((el) => {
-          if (authors.includes(el?.id)) {
-            return el?.id;
-          }
-        })
-        .filter((el) => el);
+      const authorOnId = authors;
+      const ID =
+        state.books.length > 0 &&
+        state.books.reduce((acc, curr) => (acc.id > curr.id ? acc : curr));
+
       const newBook = {
-        id: counterId(LenBooks),
+        id: ID ? ID.id + 1 : 1,
         BookTitle: name,
         PublicationDate: years,
         BookAuthor: authorOnId,
       };
-
-      const newAuthors = state.authors.map((el) => {
-        if (el?.id === Number(authors)) {
-          let count = el.numberOfBooks;
-          return { ...el, numberOfBooks: (count += 1) };
-        } else {
-          return el;
-        }
-      });
-      state.authors = state.authors.length ? newAuthors : [];
       state.books.push(newBook);
     },
     createAuthor: (state: MainSlice, action) => {
       const { authors } = action.payload;
-      const LenAuthors = state.authors.length;
+      const ID =
+        state.authors.length > 0 &&
+        state.authors.reduce((acc, curr) => (acc.id > curr.id ? acc : curr));
 
-      const newAuthor: Author = {
-        id: counterId(LenAuthors),
+      const newAuthor: Authors = {
+        id: ID ? ID.id + 1 : 1,
         authorsName: authors,
-        numberOfBooks: 0,
       };
       state.authors.push(newAuthor);
     },
@@ -67,23 +54,11 @@ export const mainSlice = createSlice({
         return el;
       });
       state.books = booksWithDeletedId;
-      state.authors = deleteObjFromArray(state.authors, Number(id));
+      state.authors = state.authors.filter((el) => el.id !== Number(id));
     },
     deleteBooks: (state: MainSlice, action) => {
       const { id } = action.payload;
-      const authorsWithDeletedId = state.authors.map((el) => {
-        if (el) {
-          if (el.id === id) {
-            return {
-              ...el,
-              numberOfBooks: (el.numberOfBooks -= 1),
-            };
-          }
-          return el;
-        }
-      });
-      state.authors = authorsWithDeletedId;
-      state.books = deleteObjFromArray(state.books, id);
+      state.books = state.books.filter((el) => el.id !== id);
     },
     editAuthor: (state: MainSlice, action) => {
       const { authors, id } = action.payload;
@@ -105,9 +80,7 @@ export const mainSlice = createSlice({
             ...el,
             BookTitle: name,
             PublicationDate: years,
-            BookAuthor: state.authors.filter((el) =>
-              authors.includes(String(el.id))
-            ),
+            BookAuthor: authors,
           };
         } else {
           return el;
@@ -128,10 +101,3 @@ export const {
 } = mainSlice.actions;
 
 export default mainSlice.reducer;
-
-///HELPERS
-const deleteObjFromArray = (arr: [], id: number | string) => {
-  return arr.filter((elements: Books | Authors) => elements.id !== id);
-};
-
-const counterId = (b: number) => (b >= 0 ? b + 1 : 0);

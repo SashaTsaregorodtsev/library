@@ -2,11 +2,10 @@ export type Books = {
   id: number;
   BookTitle: string;
   PublicationDate: number;
-  BookAuthor: Array<Omit<Authors, "numberOfBooks authorsName">>;
+  BookAuthor: Array<number>;
 };
 
 export type Authors = {
   id: number;
   authorsName: string;
-  numberOfBooks: number;
 };

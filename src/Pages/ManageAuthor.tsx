@@ -1,49 +1,53 @@
-import { Formik, useFormik } from "formik";
-import * as yup from "yup";
-import { FormEvent, useEffect, useState } from "react";
+import { Formik, FormikHelpers, useFormik } from "formik";
+import { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
-import { createAuthor, editAuthor } from "../store1/slice";
+import { createAuthor, editAuthor } from "../store/slice";
 import { Authors } from "../types/types";
 import { useNavigate } from "react-router-dom";
+import { authorSchema } from "../yupSchema/schema";
 
-type Props = {};
+type ValuesFormik = {
+  fullName: string | undefined;
+};
 
-const ManageAuthor = (props: Props) => {
+const ManageAuthor = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const allAuthors = useAppSelector((state) => state.main.authors);
-  const [editMode, setEditMode] = useState(window.location.search);
+  const editMode = window.location.search;
   const QueryId = editMode && editMode.replace("?", " ");
-  const [nameAuthor, setName] = useState<string>(
+  const [nameAuthor, setName] = useState(
     editMode
       ? allAuthors?.find((el: Authors) => el.id === Number(QueryId))
           ?.authorsName
       : ""
   );
 
-  const gos = (values: { fullName: string }) => {
+  const submitAuthor = (values: ValuesFormik) => {
     const { fullName } = values;
-    editMode
-      ? dispatch(editAuthor({ authors: fullName, id: QueryId }))
-      : dispatch(createAuthor({ authors: fullName }));
+    if (editMode) {
+      dispatch(editAuthor({ authors: fullName, id: QueryId }));
+    } else {
+      dispatch(createAuthor({ authors: fullName }));
+    }
     return navigate("/listsAuthors");
   };
-  const schema = yup.object({
-    fullName: yup.string().required(),
-  });
 
   return (
     <Formik
-      validationSchema={schema}
+      validationSchema={authorSchema}
       initialValues={{ fullName: nameAuthor }}
-      onSubmit={(values, action) => gos(values)}
+      onSubmit={(values, action) => submitAuthor(values)}
     >
       {(props) => (
         <Form onSubmit={props.handleSubmit}>
           <Form.Group className="mb-3" controlId="formBasicEmail">
             <h1>Создание автора</h1>
+            {props.touched.fullName && props.errors.fullName ? (
+              <div>{props.errors.fullName}</div>
+            ) : null}
             <Form.Control
               required
               style={{ width: "40%" }}
@@ -55,7 +59,7 @@ const ManageAuthor = (props: Props) => {
             />
           </Form.Group>
           <Button variant="primary" type="submit">
-            Добавить
+            {editMode ? "Редактировать" : "Добавить"}
           </Button>
         </Form>
       )}

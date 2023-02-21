@@ -2,27 +2,32 @@ import { useEffect, useState } from "react";
 import Table from "react-bootstrap/Table";
 import Dropdown from "react-bootstrap/Dropdown";
 import Button from "react-bootstrap/Button";
-import { deleteBooks } from "../store1/slice";
+import { deleteBooks } from "../store/slice";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
 import { Books } from "../types/types";
+import { Link } from "react-router-dom";
+import "../index.css";
+import { routers } from "../consts";
+
 type Props = {};
 
 const BookList = (props: Props) => {
   const dispatch = useAppDispatch();
   const [activeBook, setActiveBook] = useState<number | null>(null);
-  const [activeAuthor, setActiveAuthor] = useState<number | null>(null);
+  const [activeAuthor, setActiveAuthor] = useState<number>(0);
   const books = useAppSelector((state) => state.main.books);
   const authors = useAppSelector((state) => state.main.authors);
-  const [list, useList] = useState(books);
-  const [editMode, setEditMode] = useState(false);
-  const deleteBook = () =>
-    dispatch(deleteBooks({ id: activeBook, sortMode: editMode }));
-
+  const [list, useList] = useState<Array<Books> | null>(books);
+  const deleteBook = () => dispatch(deleteBooks({ id: activeBook }));
+  const styleForTable = (id: number) =>
+    activeBook && activeBook === id ? "darkgrey " : "white";
   const filterByAuthor = () => {
-    const filtredBooks = books?.filter((el: Books) =>
-      el?.BookAuthor?.includes(activeAuthor)
-    );
-    useList(filtredBooks);
+    if (activeAuthor) {
+      const filtredBooks = books?.filter((el: Books) =>
+        el?.BookAuthor?.includes(activeAuthor)
+      );
+      useList(filtredBooks);
+    }
   };
 
   useEffect(() => {
@@ -30,8 +35,8 @@ const BookList = (props: Props) => {
   }, [books]);
 
   return (
-    <>
-      <Table striped bordered hover size="sm" variant="dark" responsive>
+    <div className="List">
+      <table>
         <thead>
           <tr>
             <th>ID</th>
@@ -42,7 +47,13 @@ const BookList = (props: Props) => {
         </thead>
         <tbody>
           {list?.map((el) => (
-            <tr key={el?.id} onClick={() => setActiveBook(el ? el.id : null)}>
+            <tr
+              style={{
+                backgroundColor: styleForTable(el.id),
+              }}
+              key={el?.id}
+              onClick={() => setActiveBook(el.id)}
+            >
               <td>{el?.id}</td>
               <td>{el?.BookTitle}</td>
               <td>
@@ -56,42 +67,52 @@ const BookList = (props: Props) => {
             </tr>
           ))}
         </tbody>
-      </Table>
-      <Dropdown>
-        <Dropdown.Toggle variant="success" id="dropdown-basic">
-          Фильтр
-        </Dropdown.Toggle>
+      </table>
+      <div className="Footer">
+        <Dropdown>
+          <Dropdown.Toggle variant="success" id="dropdown-basic">
+            Фильтр
+          </Dropdown.Toggle>
 
-        <Dropdown.Menu>
-          {authors?.map((el) => (
-            <Dropdown.Item
-              onClick={() => setActiveAuthor(el ? el.id : null)}
-              key={el?.id}
-            >
-              {el?.authorsName}
-            </Dropdown.Item>
-          ))}
-        </Dropdown.Menu>
-        <Button onClick={filterByAuthor} variant="primary">
-          Применить фильтр
-        </Button>
-      </Dropdown>
-      <div style={{ display: "flex", marginTop: 10 }}>
-        <Button href={`/managmentBook?${activeBook}`} variant="primary">
-          Редактировать
-        </Button>
-        <Button
-          href="/managmentBook"
-          style={{ marginLeft: 5 }}
-          variant="primary"
-        >
-          Добавить
-        </Button>
-        <Button onClick={deleteBook} style={{ marginLeft: 5 }} variant="danger">
-          Удалить
-        </Button>
+          <Dropdown.Menu>
+            {authors?.map((el) => (
+              <Dropdown.Item
+                onClick={() => setActiveAuthor(el.id)}
+                key={el?.id}
+              >
+                {el?.authorsName}
+              </Dropdown.Item>
+            ))}
+          </Dropdown.Menu>
+          <Button
+            style={{ marginLeft: 10 }}
+            onClick={filterByAuthor}
+            variant="primary"
+          >
+            Применить фильтр
+          </Button>
+        </Dropdown>
+        <div style={{ display: "flex", marginTop: 10 }}>
+          {activeBook && (
+            <Link to={routers["managmentBooks"] + "?" + activeBook}>
+              <Button variant="primary">Редактировать</Button>
+            </Link>
+          )}
+          <Link to={routers["managmentBooks"]}>
+            <Button style={{ marginLeft: 5 }} variant="primary">
+              Добавить
+            </Button>
+          </Link>
+          <Button
+            onClick={deleteBook}
+            style={{ marginLeft: 5 }}
+            variant="danger"
+          >
+            Удалить
+          </Button>
+        </div>
       </div>
-    </>
+    </div>
   );
 };
 

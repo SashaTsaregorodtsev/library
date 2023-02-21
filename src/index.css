@@ -1,0 +1,39 @@
+* {
+  padding: 0px;
+  margin: 0px;
+  box-sizing: border-box;
+}
+
+table,
+th,
+td {
+  border: 1px solid;
+  width: 30%;
+}
+
+tr {
+  cursor: pointer;
+}
+
+.List {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
+}
+
+.Footer {
+  margin-top: 10px;
+}
+
+.Nav {
+  background-color: cornflowerblue;
+  display: flex;
+  justify-content: space-around;
+}
+
+.Nav a {
+  margin: 5px;
+  color: black;
+}
